@@ -3,6 +3,7 @@
 # See also LICENSE.txt
 
 import grok
+from .field import ICaptcha
 from zope.component import getMultiAdapter
 from zope.interface import Interface
 from zeam.form.base.markers import NO_VALUE
@@ -20,7 +21,7 @@ class CaptchaFieldWidget(SchemaFieldWidget):
 
     def __init__(self, component, form, request):
         super(CaptchaFieldWidget, self).__init__(component, form, request)
-        self.captcha = getMultiAdapter((form.context, request), name='captcha')
+        self.captcha = getMultiAdapter((form.context, request), name='captcha.png')
 
 
 class CaptchaWidgetExtractor(WidgetExtractor):
@@ -33,9 +34,9 @@ class CaptchaWidgetExtractor(WidgetExtractor):
         if value is not NO_VALUE:
             value = str(value)
             captcha = getMultiAdapter(
-                (self.form.context, self.request), name='captcha')
+                (self.form.context, self.request), name='captcha.png')
             if not captcha.verify(value):
-                return (None, _(u"Invalid captcha input."))
+                return (None, u"Invalid captcha input.")
             return (value, None)
         return (value, None)
 

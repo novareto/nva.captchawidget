@@ -63,13 +63,10 @@ class ImageCaptcha(RenderedCaptcha):
         return skimpyAPI.Png(self.word, speckle=0.5, fontpath=FONTPATH).data()
 
 
-CAPTCHA_RENDERERS = {
-    'image.png': ImageCaptcha,
-    }
-
-
 class Captcha(grok.View):
+    grok.name('captcha.png')
     grok.context(Interface)
+    grok.require('zope.Public')
 
     _session_id = None
 
@@ -77,10 +74,10 @@ class Captcha(grok.View):
         """Set the session cookie
         """
         response = self.request.response
-        if COOKIE_ID in response.cookies:
+        if COOKIE_ID in response._cookies:
             # clear the cookie first, clearing out any expiration cookie
             # that may have been set during verification
-            del response.cookies[COOKIE_ID]
+            del response._cookies[COOKIE_ID]
         response.setCookie(COOKIE_ID, value, path='/')
 
     def _generate_session(self):
@@ -127,15 +124,19 @@ class Captcha(grok.View):
         return words
 
     def _url(self, filename):
-        return '%s/@@%s/%s' % (
-            absoluteURL(self.context, self.request), self.__name__, filename)
+        return '%s/%s' % (self.application_url(), filename)
 
     def image_tag(self):
         self._generate_session()
-        return '<img src="%s" alt="captcha"/>' % (self._url('image.png'),)
+        return '<img src="%s" alt="captcha"/>' % (self._url('captcha.png'),)
 
     def render(self):
-        return self.image_tag()
+        self._verify_session()
+        captcha = ImageCaptcha(
+            self.context,
+            self.request,
+            self._generate_words()[0])
+        return captcha()
 
     def verify(self, input):
         if not input:
@@ -150,12 +151,3 @@ class Captcha(grok.View):
             pass  # No cookie
 
         return result
-
-    def publishTraverse(self, request, name):
-        if name in CAPTCHA_RENDERERS:
-            self._verify_session()
-            return CAPTCHA_RENDERERS[name](
-                self.context,
-                request,
-                self._generate_words()[0])
-        return super(Captcha, self).publishTraverse(request, name)
