@@ -1,0 +1,7 @@
+<div class="field-captcha-wrapper">
+  <img tal:replace="structure widget.captcha.image_tag()" />
+  <input type="text" size="40" id="#" class="#"
+         tal:attributes="name widget.identifier;
+                         id widget.htmlId();
+                         class widget.htmlClass()" />
+</div>
