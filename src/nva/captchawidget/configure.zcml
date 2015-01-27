@@ -3,9 +3,13 @@
     xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:grok="http://namespaces.zope.org/grok">
 
-  <include package="grok" />
+  <include package="grokcore.component" file="meta.zcml" />
+  <include package="five.grok" />
+  <!--
+  <include package="grokcore.view" />
   <include package="zeam.form.base" />
   <include package="zeam.form.ztk" />
+-->
   <grok:grok package="." />
 
 </configure>

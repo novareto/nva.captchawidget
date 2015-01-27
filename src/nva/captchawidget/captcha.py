@@ -9,10 +9,19 @@ import hmac
 
 from skimpyGimpy import skimpyAPI
 
-import grok
+from uvc.api import api
 from zope.interface import Interface
 from zope.component import getUtility
 from zope.traversing.browser import absoluteURL
+
+
+try:
+    from ZServer.HTTPResponse import ZServerHTTPResponse
+except ImportError:
+    ZOPE2 = False
+else:
+    ZOPE2 = True
+
 
 # Restricted set to avoid 0/o/O or i/I/1 confusion
 CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -61,10 +70,10 @@ class ImageCaptcha(RenderedCaptcha):
         return skimpyAPI.Png(self.word, speckle=0.5, fontpath=FONTPATH).data()
 
 
-class Captcha(grok.View):
-    grok.name('captcha.png')
-    grok.context(Interface)
-    grok.require('zope.Public')
+class Captcha(api.View):
+    api.name('captcha.png')
+    api.context(Interface)
+    #api.require('zope.Public')
 
     _session_id = None
 
@@ -72,10 +81,12 @@ class Captcha(grok.View):
         """Set the session cookie
         """
         response = self.request.response
-        if COOKIE_ID in response._cookies:
-            # clear the cookie first, clearing out any expiration cookie
-            # that may have been set during verification
-            del response._cookies[COOKIE_ID]
+        if ZOPE2:
+            if COOKIE_ID in response.cookies:
+                del response.cookies[COOKIE_ID]
+        else:
+            if COOKIE_ID in response._cookies:
+                del response._cookies[COOKIE_ID]
         response.setCookie(COOKIE_ID, value, path='/')
 
     def _generate_session(self):
@@ -122,7 +133,14 @@ class Captcha(grok.View):
         return words
 
     def _url(self, filename):
-        return '%s/%s' % (self.application_url(), filename)
+        if ZOPE2:
+            from plone import api
+            baseurl = api.portal.get().absolute_url()
+        else:
+            from grokcore.view.util import url
+            from grokcore.site.util import getApplication
+            baseurl = url(self.request, getApplication())
+        return '%s/%s' % (baseurl, filename)
 
     def image_tag(self):
         self._generate_session()
