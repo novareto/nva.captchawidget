@@ -2,12 +2,16 @@
 
 import grok
 from .field import ICaptcha
+from zope.i18nmessageid import MessageFactory
 from zope.component import getMultiAdapter
 from zope.interface import Interface
 from zeam.form.base.markers import NO_VALUE
 from zeam.form.base.widgets import WidgetExtractor
 from zeam.form.ztk.fields import (
     SchemaField, registerSchemaField, SchemaFieldWidget)
+
+
+_ = MessageFactory('nva.captchawidget')
 
 
 class CaptchaSchemaField(SchemaField):
@@ -34,7 +38,7 @@ class CaptchaWidgetExtractor(WidgetExtractor):
             captcha = getMultiAdapter(
                 (self.form.context, self.request), name='captcha.png')
             if not captcha.verify(value):
-                return (None, u"Invalid captcha input.")
+                return (None, _(u"Invalid captcha input."))
             return (value, None)
         return (value, None)
 
