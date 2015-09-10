@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import grok
+import grokcore.component as grok
 from .field import ICaptcha
 from zope.i18nmessageid import MessageFactory
 from zope.component import getMultiAdapter
