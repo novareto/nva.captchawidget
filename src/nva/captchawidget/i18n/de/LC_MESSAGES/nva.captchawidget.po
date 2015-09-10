@@ -16,4 +16,4 @@ msgstr ""
 "Domain: nva.captchawidget\n"
 
 msgid "Invalid captcha input."
-msgstr ""
+msgstr "Die Buchstaben des Bildes wurde nicht richtig eingegeben."
